@@ -1,12 +1,9 @@
 package br.usjt.arqsw18.pipoca.controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,24 +21,19 @@ import br.usjt.arqsw18.pipoca.model.service.GeneroService;
 public class ManterFilmesController {
 	@Autowired
 	private FilmeService fService;
-	
 	@Autowired
 	private GeneroService gService;
 
-	
-
-	@Transactional
 	@RequestMapping("index")
 	public String iniciar() {
 		return "index";
 	}
 
-	@Transactional
 	@RequestMapping("/novo_filme")
-	public String novo(Model model) {
+	public String novo(Model model, HttpSession session) {
 		try {
 			List<Genero> generos = gService.listarGeneros();
-			model.addAttribute("generos", generos);
+			session.setAttribute("generos", generos);
 			return "CriarFilme";
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -50,24 +42,23 @@ public class ManterFilmesController {
 		}
 	}
 
-	@Transactional
 	@RequestMapping("/criar_filme")
-	public String criarFilme(@Valid Filme filme, Model model, BindingResult result) {
-		if (result.hasErrors())
-			return "CriarFilme";
-
+	public String criarFilme(@Valid Filme filme, BindingResult erros, Model model) {
 		try {
+			if (!erros.hasErrors()) {
+				Genero genero = new Genero();
+				genero.setId(filme.getGenero().getId());
+				genero.setNome(gService.buscarGenero(genero.getId()).getNome());
+				filme.setGenero(genero);
 
-			Genero genero = new Genero();
-			genero.setId(filme.getGenero().getId());
-			genero.setNome(gService.buscarGenero(genero.getId()).getNome());
-			filme.setGenero(genero);
+				filme = fService.inserirFilme(filme);
 
-			filme = fService.inserirFilme(filme);
+				model.addAttribute("filme", filme);
 
-			model.addAttribute("filme", filme);
-
-			return "VisualizarFilme";
+				return "VisualizarFilme";
+			} else {
+				return "CriarFilme";
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			model.addAttribute("erro", e);
@@ -75,23 +66,12 @@ public class ManterFilmesController {
 		}
 	}
 
-	@Transactional
 	@RequestMapping("/reiniciar_lista")
 	public String reiniciarLista(HttpSession session) {
 		session.setAttribute("lista", null);
-		session.setAttribute("generos", null);
 		return "ListarFilmes";
 	}
-	
-	@RequestMapping("/visualizar_filme")
-	public String visualizarFilme(Model model, HttpServletRequest request) throws IOException {
-		int id = Integer.parseInt(request.getParameter("id"));
-		Filme filme = fService.buscarFilme(id);
-		model.addAttribute("filme", filme);
-		return "VisualizarFilme";
-	}
-	
-	@Transactional
+
 	@RequestMapping("/listar_filmes")
 	public String listarFilmes(HttpSession session, Model model, String chave) {
 		try {
@@ -111,4 +91,95 @@ public class ManterFilmesController {
 			return "Erro";
 		}
 	}
+
+	@RequestMapping("/visualizar_filme")
+	public String visualizarFilme(Filme filme, Model model) {
+		try {
+			filme = fService.buscarFilme(filme.getId());
+			model.addAttribute("filme", filme);
+			return "VisualizarFilme";
+		} catch (IOException e) {
+			e.printStackTrace();
+			model.addAttribute("erro", e);
+			return "Erro";
+		}
+	}
+	
+	@RequestMapping("/excluir_filme")
+	public String excluirFilme(Filme filme, HttpSession session, Model model) {
+		try {
+			fService.excluirFilme(filme);
+			List<Filme> filmes = (List<Filme>) session.getAttribute("lista");
+			session.setAttribute("lista", removerDaLista(filme, filmes));
+			return "ListarFilmes";
+		} catch (IOException e) {
+			e.printStackTrace();
+			model.addAttribute("erro", e);
+			return "Erro";
+		}
+	}
+	
+	private List<Filme> removerDaLista(Filme filme, List<Filme> filmes){
+		for(int i = 0; i < filmes.size(); i++) {
+			if(filme.getId() == filmes.get(i).getId()) {
+				filmes.remove(i);
+				break;
+			}
+		}
+		return filmes;
+	}
+	
+	private List<Filme> atualizarDaLista(Filme filme, List<Filme> filmes){
+		for(int i = 0; i < filmes.size(); i++) {
+			if(filme.getId() == filmes.get(i).getId()) {
+				filmes.remove(i);
+				filmes.add(i, filme);
+				break;
+			}
+		}
+		return filmes;
+	}
+	
+	@RequestMapping("/alterar_filme")
+	public String atualizar(Filme filme, Model model, HttpSession session) {
+		try {
+			List<Genero> generos = gService.listarGeneros();
+			session.setAttribute("generos", generos);
+			filme = fService.buscarFilme(filme.getId());
+			model.addAttribute("filme", filme);
+			return "AtualizarFilme";
+		} catch (IOException e) {
+			e.printStackTrace();
+			model.addAttribute("erro", e);
+			return "Erro";
+		}
+	}
+
+	@RequestMapping("/atualizar_filme")
+	public String gravarAtualizacaoFilme(@Valid Filme filme, BindingResult erros, Model model, HttpSession session) {
+		try {
+			if (!erros.hasErrors()) {
+				Genero genero = new Genero();
+				genero.setId(filme.getGenero().getId());
+				genero.setNome(gService.buscarGenero(genero.getId()).getNome());
+				filme.setGenero(genero);
+
+				fService.atualizarFilme(filme);
+
+				model.addAttribute("filme", filme);
+				List<Filme> filmes = (List<Filme>) session.getAttribute("lista");
+				session.setAttribute("lista", atualizarDaLista(filme, filmes));
+
+				return "VisualizarFilme";
+			} else {
+				return "AtualizarFilme";
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			model.addAttribute("erro", e);
+			return "Erro";
+		}
+	}
+
+
 }

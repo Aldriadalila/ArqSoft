@@ -11,10 +11,11 @@ import br.usjt.arqsw18.pipoca.model.entity.Genero;
 
 @Service
 public class GeneroService {
-	@Autowired
-	private GeneroDAO dao;	
+	private GeneroDAO dao;
 	
-	public GeneroService() {
+	@Autowired
+	public GeneroService(GeneroDAO dao) {
+		this.dao = dao;
 	}
 	
 	public Genero buscarGenero(int id) throws IOException {
@@ -26,4 +27,3 @@ public class GeneroService {
 	}
 
 }
-

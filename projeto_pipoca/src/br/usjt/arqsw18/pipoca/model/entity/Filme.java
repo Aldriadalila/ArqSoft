@@ -1,8 +1,8 @@
 package br.usjt.arqsw18.pipoca.model.entity;
 
-import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -11,33 +11,37 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
 @Entity
-public class Filme implements Serializable{
+//@Table(name="Filme")
+public class Filme {
 	@Id
-	@NotNull
+	@NotNull 
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
-	
-	@NotNull (message ="O título não pode estar vazio")
-	@Size(max=100, message ="Até 200 caracteres")
+	@NotNull
+	@Size(min=2, max=100, message="Tamanho entre 2 e 100 caracteres")
 	private String titulo;
-	
+	@Size(max=4000, message="Tamanho entre 20 e 4000 caracteres")
 	private String descricao;
-	
+	@Max(value=100)
+	@Min(value=1)
 	private double popularidade;
 	
 	@Temporal(value = TemporalType.DATE)
+	@Column(name="data_lancamento")
 	private Date dataLancamento;
 	
+	@Size(max=200, message="Tamanho entre 1 e 200 caracteres")
 	private String posterPath;
-	
+	@Size(max=60, message="Tamanho entre 1 e 60 caracteres")
 	private String diretor;
-	
-	@ManyToOne //Indicando qual o tipo de relacionamento entre genero e filme
-	@JoinColumn(name="id_genero") //Indicando qual a coluna que possui a chave estrangeira em filme que se relaciona com a chave primaria em genero
+	@NotNull
+	@ManyToOne
+	@JoinColumn(name="id_genero")
 	private Genero genero;
 	
 	public int getId() {
@@ -46,15 +50,12 @@ public class Filme implements Serializable{
 	public void setId(int id) {
 		this.id = id;
 	}
-	
 	public String getTitulo() {
 		return titulo;
 	}
-	
 	public void setTitulo(String titulo) {
 		this.titulo = titulo;
 	}
-	
 	public String getDescricao() {
 		return descricao;
 	}
@@ -88,11 +89,9 @@ public class Filme implements Serializable{
 	public Genero getGenero() {
 		return genero;
 	}
-	
 	public void setGenero(Genero genero) {
 		this.genero = genero;
 	}
-	
 	@Override
 	public String toString() {
 		return "Filme [id=" + id + ", titulo=" + titulo + ", descricao=" + descricao + ", popularidade=" + popularidade
