@@ -4,9 +4,11 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.usjt.arqsw18.pipoca.model.entity.Usuario;
@@ -14,48 +16,48 @@ import br.usjt.arqsw18.pipoca.model.service.UsuarioService;
 
 @Controller
 public class ManterUsuarioController {
-    
-	private UsuarioService uService;
-	
+
 	@Autowired
-	public ManterUsuarioController (UsuarioService uService) {
-		this.uService = uService;
-	}
-	
+	private UsuarioService uService;
+
 	@Transactional
-	@RequestMapping ("/cadastro")
+	@RequestMapping("/cadastro")
 	public String novoUsuario() {
-		return "CRIAR USUARIO";
+		return "CriarUsuario";
 	}
-	
+
 	@Transactional
-	@RequestMapping ("/fazerLogin")
-	public String fazerLogin (Usuario usuario, HttpServletRequest request) throws IOException {
-		if(uService.existe(usuario)) {	
-			request.getSession().setAttribute("USUARIO LOGADO", usuario);
+	@RequestMapping("/fazer_login")
+	public String fazerLogin(Model model, Usuario usuario, HttpServletRequest request) throws IOException {
+		System.out.println(usuario.toString());
+		if (uService.existe(usuario)) {
+			System.out.println(usuario.toString());
+			request.getSession().setAttribute("usuario_logado", usuario);
 			return "index";
-		}		
-		
-		return "LOGIN";
-	}
-	
-	@Transactional
-	@RequestMapping ("/LOGOUT")
-	public String fazerLogin (HttpServletRequest request) throws IOException {
-		request.getSession().invalidate();
-		return "LOGIN";
-	}
-	
-	@Transactional
-	@RequestMapping ("/LOGIN")
-	public String Login () {
+		}
+
 		return "Login";
 	}
-	
+
 	@Transactional
-	@RequestMapping ("/CRIAR_USUARIO")
-	public String criarUsuario (Usuario usuario, HttpServletRequest request) throws IOException {
+	@RequestMapping("/logout")
+	public String fazerLogin(HttpServletRequest request) throws IOException {
+		request.getSession().invalidate();
+		return "Login";
+	}
+
+	@Transactional
+	@RequestMapping("/login")
+	public String Login() {
+		return "Login";
+	}
+
+	@Transactional
+	@RequestMapping("/criar_usuario")
+	public String criarUsuario(@Valid Usuario usuario, HttpServletRequest request) throws IOException {
+		System.out.println(usuario.toString());
 		uService.inserirUsuario(usuario);
-		return this.fazerLogin(usuario, request);
+
+		return this.fazerLogin(null, usuario, request);
 	}
 }

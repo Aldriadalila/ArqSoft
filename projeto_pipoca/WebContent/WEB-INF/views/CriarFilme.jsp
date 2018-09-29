@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -20,7 +22,8 @@
     <div id="main" class="container">
         <h3 class="page-header">Incluir Filme</h3>
         <!-- Formulario para inclusao de clientes -->
-        <form action="criar_filme" method="post">
+       <form action="criar_filme" method="post">
+       <form:errors/>
             <!-- area de campos do form -->
             <div class="row">
             		<div class="form-group col-md-4">

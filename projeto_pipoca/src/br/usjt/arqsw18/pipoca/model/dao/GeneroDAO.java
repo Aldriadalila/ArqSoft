@@ -1,73 +1,39 @@
 package br.usjt.arqsw18.pipoca.model.dao;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.List;
 
-import javax.sql.DataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.usjt.arqsw18.pipoca.model.entity.Genero;
 
 @Repository
+
 public class GeneroDAO {
+	@PersistenceContext
+	EntityManager manager;
 
-	private Connection conn;
-	
-	@Autowired
-	public GeneroDAO (DataSource dataSource) throws IOException{
-		try {
-			this.conn = dataSource.getConnection();
-		} catch (SQLException e) {
-			throw new IOException (e);
-		}
-	}
-	
-	public Genero buscarGenero(int id) throws IOException {
-		Genero genero = null;
-		String sql = "select id, nome from genero where id=?";
-
-		try (PreparedStatement pst = conn.prepareStatement(sql);) {
-
-			pst.setInt(1, id);
-			try (ResultSet rs = pst.executeQuery();) {
-
-				if (rs.next()) {
-					genero = new Genero();
-					genero.setId(id);
-					genero.setNome(rs.getString("nome"));
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new IOException(e);
-		}
-		return genero;
+	public void criar(Genero genero) {
+		manager.persist(genero);
 	}
 
-	public ArrayList<Genero> listarGeneros() throws IOException {
-		ArrayList<Genero> generos = new ArrayList<>();
-		String sql = "select id, nome from genero order by nome";
+	public void atualizar(Genero genero) {
+		manager.merge(genero);
+	}
 
-		try (PreparedStatement pst = conn.prepareStatement(sql);
-				ResultSet rs = pst.executeQuery();) {
+	public void remover(Genero genero) {
+		manager.remove(genero);
+	}
 
-			while (rs.next()) {
-				Genero genero = new Genero();
-				genero.setId(rs.getInt("id"));
-				genero.setNome(rs.getString("nome"));
-				generos.add(genero);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new IOException(e);
-		}
-		return generos;
+	public Genero buscarGenero(int id) {
+		return manager.find(Genero.class, id);
+	}
+
+	@SuppressWarnings("unchecked")
+
+	public List<Genero> listarGeneros() {
+		return manager.createQuery("select g from Genero g").getResultList();
 	}
 }

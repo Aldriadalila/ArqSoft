@@ -20,8 +20,13 @@
     <div id="main" class="container">
         <h3 class="page-header">Login</h3>
         <!-- Formulario para inclusao de clientes -->
-        <form action="fazerLogin" method="post">
+        <form action="fazer_login" method="post">
             <!-- area de campos do form -->
+            <div class="row">
+            	    <div class="form-group col-md-8">
+                    <h5>${erro}</h5>
+                </div>
+            </div>
             <div class="row">
             	    <div class="form-group col-md-8">
                     <label for="login">login</label>

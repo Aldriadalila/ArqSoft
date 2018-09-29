@@ -18,11 +18,21 @@ public class UsuarioService {
 	}
 	
 	public boolean existe(Usuario usuario) throws IOException{
-		return  dao.existe(usuario);
+		Usuario u = dao.buscarUsuario(usuario);
+		System.out.println(usuario.toString());
+		System.out.println(u.toString());
+		
+		if(u == null)
+			return false;
+		else if(u.getSenha().equals(usuario.getSenha()))
+			return true;
+		
+		return false; 		
 	}
 	
 	public Usuario inserirUsuario(Usuario usuario) throws IOException {
-		int id = dao.inserirUsuario(usuario);
+		int id = dao.criar(usuario);
+		usuario.setId(id);
 		return usuario;
 	}
 
